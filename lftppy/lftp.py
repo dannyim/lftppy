@@ -54,7 +54,7 @@ class LFTP(object):
             ...
             text_0
         :param text: The text to parse
-        :return: an array of jobs
+        :return: a dictionary of jobs
         """
         result = {}
         n = -1
@@ -76,13 +76,13 @@ class LFTP(object):
                 curr_job_text += l
         if n >= 0:
             # case for the last item
-            result[n] = Job(curr_job_text)
+            result[n] = Job(n, curr_job_text)
         return result
 
     @property
     def jobs(self):
         """ Get the status of running jobs
-        :return: List of jobs and their current state
+        :return: dictionary of jobs and their current state
         """
         jobs_output = self.run("jobs")
         # parse jobs output and put into array
