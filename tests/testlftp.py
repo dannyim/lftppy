@@ -2,9 +2,64 @@ import unittest
 import sure
 from lftppy import lftp
 from lftppy import exc
+from ftplib import FTP
+from pyftpdlib.authorizers import DummyAuthorizer
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.servers import FTPServer
+import threading
+import tempfile
+import os
 
 
-class LFTPTest(unittest.TestCase):
+class FTPServerBase(unittest.TestCase):
+    def _run_ftp_server(self):
+        self.server.serve_forever()
+
+    def _setup_home(self):
+        """ Initialize the temporary homedir of the test user
+        """
+        self.home = tempfile.mkdtemp()
+        tempfile.NamedTemporaryFile(dir=self.home)
+
+    def _teardown_home(self):
+        pass
+
+    def setUp(self):
+        self.ftp = None
+        self.host = 'localhost'
+        self.port = 9001
+        self._setup_home()
+        authorizer = DummyAuthorizer()
+        authorizer.add_user('vagrant', 'vagrant', self.home)
+        authorizer.add_anonymous(self.home)
+        handler = FTPHandler
+        handler.authorizer = authorizer
+        self.server = FTPServer((self.host, self.port), handler)
+        # run ftp server in a separate thread so as to not block tests from running
+        self.thread = threading.Thread(target=self._run_ftp_server)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def tearDown(self):
+        if self.ftp:
+            self.ftp.disconnect()
+        self.server.close_all()
+        self._teardown_home()
+
+    def test_empty_homedir(self):
+        self.ftp = ftp = lftp.LFTP(self.host, self.port, 'vagrant', 'vagrant')
+        # listing of an empty directory
+        ls = ftp.list()
+        self.assertEqual(ls, "")
+
+    def test_dir(self):
+        self.ftp = ftp = lftp.LFTP(self.host, self.port, 'vagrant', 'vagrant')
+        tempdir = tempfile.mkdtemp(dir=self.home)
+        ls = ftp.list()
+        ls.should.contain(os.path.basename(tempdir))
+
+
+class LFTPConnectTest(unittest.TestCase):
     def test_create(self):
         hostname = 'ftp.openbsd.org'
         try:
