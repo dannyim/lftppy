@@ -143,6 +143,18 @@ class LFTP(object):
         self.last_cmd = line
         self.process.sendline(line)
 
+    def _process_cmd_output(self, result):
+        """ Strip out the command from the output
+        :param result:
+        :return:
+        """
+        match = re.match("\s*(%s)\s*(.*)" % re.escape(self.last_cmd), result, re.DOTALL)
+        if not match:
+            # todo raise an error if the command wasn't in the output?
+            return result
+        else:
+            return match.group(2)
+
     def get_output(self, job_id=None, timeout=-1):
         """ Assumes successful connection to the ftp server
         :param job_id:
@@ -151,10 +163,12 @@ class LFTP(object):
                 or the current foreground process if no job_id is given
         """
         if not job_id:
-            return self.process.before
             self.process.expect(self.prompt, timeout=timeout)
+            result = self.process.before
         else:
-            return self.jobs[job_id]
+            result = self.jobs[job_id]
+        result = self._process_cmd_output(result)
+        return result
 
     def list(self, options=None):
         cmd = ['ls', '-la']
