@@ -141,6 +141,15 @@ class LFTP(object):
     def is_running(self):
         return self.process.isalive()
 
+    def kill(self, job_no=None):
+        """ Deletes the job if job_no is given, or kill the child process
+        :param job_no:
+        :return:
+        """
+        if job_no:
+            self.run("kill %d" % job_no)
+        else:
+            self.process.kill(9)
 
     def reconnect(self):
         self.last_cmd = None

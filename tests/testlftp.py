@@ -9,6 +9,7 @@ from pyftpdlib.servers import FTPServer
 import threading
 import tempfile
 import os
+import time
 
 
 class FTPServerBase(unittest.TestCase):
@@ -85,6 +86,14 @@ class LFTPTest(FTPServerBase):
         ftp.disconnect()
         ftp.reconnect()
         self.assertTrue(ftp.is_running())
+
+    def test_kill(self):
+        ftp = self.ftp
+        ftp.kill()
+        # need to wait a little bit
+        time.sleep(0.5)
+        self.assertFalse(ftp.is_running())
+
 
 class JobParserTest(unittest.TestCase):
     def test_empty(self):
