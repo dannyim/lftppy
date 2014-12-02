@@ -39,6 +39,7 @@ class FTPServerBase(unittest.TestCase):
         self.thread = threading.Thread(target=self._run_ftp_server)
         self.thread.daemon = True
         self.thread.start()
+        self.ftp = lftp.LFTP(self.host, self.port, 'vagrant', 'vagrant')
 
     def tearDown(self):
         if self.ftp:
@@ -47,13 +48,13 @@ class FTPServerBase(unittest.TestCase):
         self._teardown_home()
 
     def test_empty_homedir(self):
-        self.ftp = ftp = lftp.LFTP(self.host, self.port, 'vagrant', 'vagrant')
+        ftp = self.ftp
         # listing of an empty directory
         ls = ftp.list()
         self.assertEqual(ls, "")
 
     def test_dir(self):
-        self.ftp = ftp = lftp.LFTP(self.host, self.port, 'vagrant', 'vagrant')
+        ftp = self.ftp
         tempdir = tempfile.mkdtemp(dir=self.home)
         ls = ftp.list()
         ls.should.contain(os.path.basename(tempdir))
