@@ -9,6 +9,9 @@ class LFTP(object):
     # matches [n] where n is an integer
     job_id_matcher = re.compile(r'[\s]*\[(\d+)\]')
     def __init__(self, host, port=None, username=None, password=None):
+    # default lftp prompt
+    prompt = "lftp .*>"
+
         """
 
         :param host: The ftp hostname
@@ -117,7 +120,7 @@ class LFTP(object):
         process = spawn(" ".join(cmd))
         self.process = process
         # ensure that we can connect
-        index = self.process.expect(["lftp .*", EOF])
+        index = self.process.expect([self.prompt, EOF])
         output = self.process.before
         if index == 0:
             output = output + self.process.after
@@ -127,7 +130,7 @@ class LFTP(object):
         # We do this by trying to send a command and
         # testing to see if there's a login error
         self.process.sendline("ls")
-        index = self.process.expect(["ls .*", EOF, TIMEOUT], timeout=1)
+        index = self.process.expect([self.prompt, EOF, TIMEOUT])
         output = self.process.before
         if "Login failed" in output:
             raise exc.LoginError(output)
@@ -146,8 +149,8 @@ class LFTP(object):
                 or the current foreground process if no job_id is given
         """
         if not job_id:
-            self.process.expect("lftp .*>", timeout=timeout)
             return self.process.before
+            self.process.expect(self.prompt, timeout=timeout)
         else:
             return self.jobs[job_id]
 
