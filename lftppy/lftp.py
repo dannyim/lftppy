@@ -8,16 +8,17 @@ class LFTP(object):
 
     # matches [n] where n is an integer
     job_id_matcher = re.compile(r'[\s]*\[(\d+)\]')
-    def __init__(self, host, port=None, username=None, password=None):
     # default lftp prompt
     prompt = "lftp .*>"
 
+    def __init__(self, host, port=None, username=None, password=None, **opts):
         """
 
         :param host: The ftp hostname
         :param port: The port for the ftp service
         :param username:
         :param password:
+        :param opts: configuration for the lftp program
         :return:
         """
         self.host = host
@@ -25,8 +26,8 @@ class LFTP(object):
         self.username = username
         self.password = password
         self.process = None
-        self._connect()
         self.last_cmd = None
+        self._connect(**opts)
 
     def raw(self, string, timeout=-1):
         if not self.process:
@@ -109,7 +110,7 @@ class LFTP(object):
         output = self.get_output()
         return output
 
-    def _connect(self):
+    def _connect(self, **opts):
         """
         Attempt to connect to ftp server
         :return:
