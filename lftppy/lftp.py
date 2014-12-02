@@ -141,6 +141,11 @@ class LFTP(object):
     def is_running(self):
         return self.process.isalive()
 
+
+    def reconnect(self):
+        self.last_cmd = None
+        self._connect(**self.opts)
+
     def disconnect(self):
         self.process.terminate(force=True)
 

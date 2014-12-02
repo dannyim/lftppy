@@ -80,6 +80,12 @@ class LFTPTest(FTPServerBase):
         ftp.disconnect()
         self.assertFalse(ftp.is_running())
 
+    def test_reconnect(self):
+        ftp = self.ftp
+        ftp.disconnect()
+        ftp.reconnect()
+        self.assertTrue(ftp.is_running())
+
 class JobParserTest(unittest.TestCase):
     def test_empty(self):
         results = lftp.LFTP.parse_jobs("")
