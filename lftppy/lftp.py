@@ -70,7 +70,7 @@ class LFTP(object):
                 n = int(matches.group(1))
                 if prev != -1:
                     # do not build a job at the start
-                    result[n + 1] = Job(curr_job_text)
+                    result[n + 1] = Job(n, curr_job_text)
                 # reset the text for the current job
                 curr_job_text = line
             else:
@@ -173,7 +173,8 @@ class LFTP(object):
 
 
 class Job(object):
-    def __init__(self, text):
+    def __init__(self, job_no, text):
+        self.job_no = job_no
         self.text = text
         self.parse(text)
 
