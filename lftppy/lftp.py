@@ -137,6 +137,9 @@ class LFTP(object):
         if "Login failed" in output:
             raise exc.LoginError(output)
 
+    def is_running(self):
+        return self.process.isalive()
+
     def disconnect(self):
         self.process.terminate(force=True)
 

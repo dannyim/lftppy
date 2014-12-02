@@ -73,6 +73,13 @@ class LFTPInvalidTest(unittest.TestCase):
                           lambda: lftp.LFTP(hostname, username=user, password=pw))
 
 
+class LFTPTest(FTPServerBase):
+    def test_disconnect(self):
+        ftp = self.ftp
+        self.assertTrue(ftp.is_running())
+        ftp.disconnect()
+        self.assertFalse(ftp.is_running())
+
 class JobParserTest(unittest.TestCase):
     def test_empty(self):
         results = lftp.LFTP.parse_jobs("")
