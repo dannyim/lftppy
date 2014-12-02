@@ -27,6 +27,7 @@ class LFTP(object):
         self.password = password
         self.process = None
         self.last_cmd = None
+        self.opts = opts
         self._connect(**opts)
 
     def raw(self, string, timeout=-1):
