@@ -61,8 +61,8 @@ class LFTP(object):
         result = {}
         n = -1
         curr_job_text = ""
-        for l in text.splitlines():
-            matches = LFTP.job_id_matcher.match(l)
+        for line in text.splitlines():
+            matches = LFTP.job_id_matcher.match(line)
             if matches:
                 # start with n, decrease to 0
                 # start of next item, create the job with the text that we've aggregated
@@ -72,10 +72,10 @@ class LFTP(object):
                     # do not build a job at the start
                     result[n + 1] = Job(curr_job_text)
                 # reset the text for the current job
-                curr_job_text = l
+                curr_job_text = line
             else:
                 # build the current job text
-                curr_job_text += l
+                curr_job_text += line
         if n >= 0:
             # case for the last item
             result[n] = Job(n, curr_job_text)
