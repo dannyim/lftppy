@@ -158,17 +158,20 @@ class LFTP(object):
     def get(self, rfile, lfile, delete_src=False, delete_target=False, mode="binary"):
         pass
 
-    def mirror(self, source, target, parallel=None):
+    def mirror(self, source, target, parallel=None, background=False):
         """
 
         :param source:
         :param target:
-        :param parallel:
+        :param parallel: how many files to download in parallel
+        :param background: run the process in the background
         :return:
         """
         cmd = ['mirror', source, target]
         if parallel:
             cmd += [str(parallel)]
+        if background:
+            cmd += ['&']
         self.process.sendline(" ".join(cmd))
 
 
