@@ -26,6 +26,7 @@ class LFTP(object):
         self.password = password
         self.process = None
         self._connect()
+        self.last_cmd = None
 
     def raw(self, string, timeout=-1):
         if not self.process:
@@ -139,6 +140,7 @@ class LFTP(object):
         self.process.terminate()
 
     def send_input(self, line):
+        self.last_cmd = line
         self.process.sendline(line)
 
     def get_output(self, job_id=None, timeout=-1):
