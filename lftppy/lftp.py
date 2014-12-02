@@ -130,7 +130,7 @@ class LFTP(object):
         # ensure that we are logged in
         # We do this by trying to send a command and
         # testing to see if there's a login error
-        self.process.sendline("ls")
+        self.process.sendline("ls -la")
         index = self.process.expect([self.prompt, EOF, TIMEOUT])
         output = self.process.before
         if "Login failed" in output:
