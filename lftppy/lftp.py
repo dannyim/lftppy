@@ -137,7 +137,7 @@ class LFTP(object):
             raise exc.LoginError(output)
 
     def disconnect(self):
-        self.process.terminate()
+        self.process.terminate(force=True)
 
     def send_input(self, line):
         self.last_cmd = line
