@@ -60,17 +60,7 @@ class FTPServerBase(unittest.TestCase):
         ls.should.contain(os.path.basename(tempdir))
 
 
-class LFTPConnectTest(unittest.TestCase):
-    def test_create(self):
-        hostname = 'ftp.openbsd.org'
-        try:
-            ftp = lftp.LFTP(hostname, username='anonymous',
-                            password='test@example.org')
-        except exc.ConnectionError as e:
-            self.fail(str(e))
-        except exc.LoginError as e:
-            self.fail(str(e))
-
+class LFTPInvalidTest(unittest.TestCase):
     def test_bad_host(self):
         hostname = "does_not_exist"
         self.assertRaises(exc.ConnectionError, lambda: lftp.LFTP(hostname))
