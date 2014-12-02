@@ -8,3 +8,10 @@ Install
 
 Usage
 ===
+
+Testing
+===
+* run all tests
+	* <pre><code>$ nosetests</code></pre>
+* run a single test
+	* <pre><code>$ nosetests tests.testlftp.FTPServerBase</code></pre>
