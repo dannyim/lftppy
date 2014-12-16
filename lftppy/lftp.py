@@ -9,7 +9,7 @@ class LFTP(object):
     # matches [n] where n is an integer
     job_id_matcher = re.compile(r'[\s]*\[(\d+)\]')
     # default lftp prompt
-    prompt = "lftp .*>"
+    prompt = "lftp .*?>"
 
     def __init__(self, host, port=None, username=None, password=None, **opts):
         """
