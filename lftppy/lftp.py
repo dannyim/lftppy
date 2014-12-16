@@ -146,7 +146,7 @@ class LFTP(object):
         :param job_no:
         :return:
         """
-        if job_no:
+        if job_no is not None:
             self.run("kill %d" % job_no)
         else:
             self.process.kill(9)
