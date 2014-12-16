@@ -76,7 +76,7 @@ class LFTP(object):
                 n = int(matches.group(1))
                 if prev != -1:
                     # do not build a job at the start
-                    result[n + 1] = Job(n, curr_job_text)
+                    result[prev] = Job(prev, curr_job_text)
                 # reset the text for the current job
                 curr_job_text = line
             else:
