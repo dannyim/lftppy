@@ -20,6 +20,7 @@ class FTPServerBase(unittest.TestCase):
         """ Initialize the temporary homedir of the test user
         """
         self.home = tempfile.mkdtemp()
+        self.storage = tempfile.mkdtemp()
         tempfile.NamedTemporaryFile(dir=self.home)
 
     def _teardown_home(self):
@@ -93,6 +94,20 @@ class LFTPTest(FTPServerBase):
         # need to wait a little bit
         time.sleep(0.5)
         self.assertFalse(ftp.is_running())
+
+    def test_kill_job_no(self):
+        # add a few big files to download
+        f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+        f.file.write(os.urandom(1024 * 1024 * 10))
+        ftp = self.ftp
+        ls = ftp.list()
+        ftp.run("set net:limit-rate 1000")
+        ftp.run("get -O %s %s" % (self.storage, os.path.basename(f.name)), True)
+        time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), 1)
+        ftp.kill(0)
+        time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), 0)
 
 
 class JobParserTest(unittest.TestCase):
