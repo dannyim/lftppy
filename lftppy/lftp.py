@@ -167,7 +167,12 @@ class LFTP(object):
         :param result:
         :return:
         """
-        match = re.match("\s*(%s)\s*(.*)" % re.escape(self.last_cmd), result, re.DOTALL)
+        last_cmd = self.last_cmd
+        bg_char_idx = last_cmd.rfind("&")
+        if bg_char_idx > 0:
+            last_cmd = last_cmd[:bg_char_idx]
+        regex = "\s*(%s)\s*(.*)" % re.escape(last_cmd)
+        match = re.match(regex, result, re.DOTALL)
         if not match:
             # todo raise an error if the command wasn't in the output?
             return result
