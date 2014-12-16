@@ -187,8 +187,9 @@ class LFTP(object):
                 or the current foreground process if no job_id is given
         """
         if not job_id:
-            self.process.expect(self.prompt, timeout=timeout)
+            self.process.expect([self.prompt, EOF, TIMEOUT], timeout=timeout)
             result = self.process.before
+            # todo handle EOF and TIMEOUT cases
         else:
             result = self.jobs[job_id]
         result = self._process_cmd_output(result)
