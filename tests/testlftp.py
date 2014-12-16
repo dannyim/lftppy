@@ -2,19 +2,67 @@ import unittest
 import sure
 from lftppy import lftp
 from lftppy import exc
+from ftplib import FTP
+from pyftpdlib.authorizers import DummyAuthorizer
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.servers import FTPServer
+import threading
+import tempfile
+import os
+import time
 
 
-class LFTPTest(unittest.TestCase):
-    def test_create(self):
-        hostname = 'ftp.openbsd.org'
-        try:
-            ftp = lftp.LFTP(hostname, username='anonymous',
-                            password='test@example.org')
-        except exc.ConnectionError as e:
-            self.fail(str(e))
-        except exc.LoginError as e:
-            self.fail(str(e))
+class FTPServerBase(unittest.TestCase):
+    def _run_ftp_server(self):
+        self.server.serve_forever()
 
+    def _setup_home(self):
+        """ Initialize the temporary homedir of the test user
+        """
+        self.home = tempfile.mkdtemp()
+        self.storage = tempfile.mkdtemp()
+        tempfile.NamedTemporaryFile(dir=self.home)
+
+    def _teardown_home(self):
+        pass
+
+    def setUp(self):
+        self.ftp = None
+        self.host = 'localhost'
+        self.port = 9001
+        self._setup_home()
+        authorizer = DummyAuthorizer()
+        authorizer.add_user('vagrant', 'vagrant', self.home)
+        authorizer.add_anonymous(self.home)
+        handler = FTPHandler
+        handler.authorizer = authorizer
+        self.server = FTPServer((self.host, self.port), handler)
+        # run ftp server in a separate thread so as to not block tests from running
+        self.thread = threading.Thread(target=self._run_ftp_server)
+        self.thread.daemon = True
+        self.thread.start()
+        self.ftp = lftp.LFTP(self.host, self.port, 'vagrant', 'vagrant')
+
+    def tearDown(self):
+        if self.ftp:
+            self.ftp.disconnect()
+        self.server.close_all()
+        self._teardown_home()
+
+    def test_empty_homedir(self):
+        ftp = self.ftp
+        # listing of an empty directory
+        ls = ftp.list()
+        self.assertEqual(ls, "")
+
+    def test_dir(self):
+        ftp = self.ftp
+        tempdir = tempfile.mkdtemp(dir=self.home)
+        ls = ftp.list()
+        ls.should.contain(os.path.basename(tempdir))
+
+
+class LFTPInvalidTest(unittest.TestCase):
     def test_bad_host(self):
         hostname = "does_not_exist"
         self.assertRaises(exc.ConnectionError, lambda: lftp.LFTP(hostname))
@@ -26,6 +74,98 @@ class LFTPTest(unittest.TestCase):
         self.assertRaises(exc.LoginError,
                           lambda: lftp.LFTP(hostname, username=user, password=pw))
 
+
+class LFTPTest(FTPServerBase):
+    def test_disconnect(self):
+        ftp = self.ftp
+        self.assertTrue(ftp.is_running())
+        ftp.disconnect()
+        self.assertFalse(ftp.is_running())
+
+    def test_reconnect(self):
+        ftp = self.ftp
+        ftp.disconnect()
+        ftp.reconnect()
+        self.assertTrue(ftp.is_running())
+
+    def test_kill(self):
+        ftp = self.ftp
+        ftp.kill()
+        # need to wait a little bit
+        time.sleep(0.5)
+        self.assertFalse(ftp.is_running())
+
+    def test_job_ids(self):
+        """ ensure jobs are created with the correct ids
+        """
+        files = []
+        for i in range(5):
+            f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+            f.file.write(os.urandom(1024*1024*5))
+            files.append(f)
+        ftp = self.ftp
+        ftp.run("set net:limit-rate 1000")
+        for f in files:
+            fname = f.name
+            self.assertTrue(os.path.exists(fname))
+            ftp.run("get -O %s %s" % (self.storage, os.path.basename(fname)), True)
+            time.sleep(0.5)
+        jobs = ftp.jobs
+        for idx, job in jobs.iteritems():
+            self.assertEqual(idx, job.job_no)
+
+    def test_kill_single_job(self):
+        # add a few big files to download
+        f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+        f.file.write(os.urandom(1024 * 1024 * 10))
+        ftp = self.ftp
+        ls = ftp.list()
+        ftp.run("set net:limit-rate 1000")
+        ftp.run("get -O %s %s" % (self.storage, os.path.basename(f.name)), True)
+        time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), 1)
+        ftp.kill(0)
+        time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), 0)
+
+    def test_kill_multiple_jobs(self):
+        files = []
+        for i in range(5):
+            f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+            f.file.write(os.urandom(1024*1024*5))
+            files.append(f)
+        ftp = self.ftp
+        ftp.run("set net:limit-rate 1000")
+        for f in files:
+            fname = f.name
+            self.assertTrue(os.path.exists(fname))
+            ftp.run("get -O %s %s" % (self.storage, os.path.basename(fname)), True)
+            time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), len(files))
+        for i in range(len(files)):
+            ftp.kill(i)
+            time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), 0)
+
+    def test_kill_job_no(self):
+        files = []
+        for i in range(5):
+            f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+            f.file.write(os.urandom(1024*1024*5))
+            files.append(f)
+        ftp = self.ftp
+        ftp.run("set net:limit-rate 1000")
+        for f in files:
+            fname = f.name
+            self.assertTrue(os.path.exists(fname))
+            ftp.run("get -O %s %s" % (self.storage, os.path.basename(fname)), True)
+            time.sleep(0.5)
+        ftp.kill(1)
+        time.sleep(0.5)
+        self.assertEqual([0, 2, 3, 4], ftp.jobs.keys())
+        ftp.kill(2)
+        time.sleep(0.5)
+        self.assertEqual([0, 3, 4], ftp.jobs.keys())
 
 class JobParserTest(unittest.TestCase):
     def test_empty(self):

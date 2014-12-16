@@ -14,5 +14,6 @@ setup(
         'sure',
         'mock',
         'six',
+        'pyftpdlib',
     ]
 )
