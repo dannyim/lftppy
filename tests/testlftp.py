@@ -109,6 +109,25 @@ class LFTPTest(FTPServerBase):
         time.sleep(0.5)
         self.assertEqual(len(ftp.jobs), 0)
 
+    def test_kill_multiple_jobs(self):
+        files = []
+        for i in range(5):
+            f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+            f.file.write(os.urandom(1024*1024*5))
+            files.append(f)
+        ftp = self.ftp
+        ftp.run("set net:limit-rate 1000")
+        for f in files:
+            fname = f.name
+            self.assertTrue(os.path.exists(fname))
+            ftp.run("get -O %s %s" % (self.storage, os.path.basename(fname)), True)
+            time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), len(files))
+        for i in range(len(files)):
+            ftp.kill(i)
+            time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), 0)
+
 
 class JobParserTest(unittest.TestCase):
     def test_empty(self):
