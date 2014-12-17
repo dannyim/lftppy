@@ -199,8 +199,28 @@ class LFTP(object):
         cmd = ['ls', '-la']
         return self.run(" ".join(cmd))
 
-    def get(self, rfile, lfile, delete_src=False, delete_target=False, mode="binary"):
-        pass
+    def get(self, rfile, lfile, delete_src=False, delete_target=False, mode="binary",
+            background=False):
+        """ Get a single file
+        :param rfile:
+        :param lfile:
+        :param delete_src:
+        :param delete_target:
+        :param mode:
+        :param background:
+        :return:
+        """
+        cmd_parts = ['get']
+        if delete_src:
+            cmd_parts.append('-E')
+        if mode == 'ascii':
+            cmd_parts.append('-a')
+        cmd_parts.append(rfile)
+        cmd_parts += ['-o', lfile]
+        if background:
+            cmd_parts += ['&']
+        cmd = " ".join(cmd_parts)
+        self.run(cmd, background=background)
 
     def mirror(self, source, target, parallel=None, background=False):
         """
