@@ -142,7 +142,7 @@ class LFTP(object):
         return self.process.isalive()
 
     def kill(self, job_no=None):
-        """ Deletes the job if job_no is given, or kill the child process
+        """ kills the job if job_no is given, or kill the child process
         :param job_no:
         :return:
         """
