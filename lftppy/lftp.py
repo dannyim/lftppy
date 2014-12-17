@@ -245,5 +245,8 @@ class Job(object):
         self.text = text
         self.parse(text)
 
+    def __str__(self):
+        return self.text
+
     def parse(self, text):
         pass
