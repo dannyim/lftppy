@@ -167,6 +167,43 @@ class LFTPTest(FTPServerBase):
         time.sleep(0.5)
         self.assertEqual([0, 3, 4], ftp.jobs.keys())
 
+    def test_mirror(self):
+        path = tempfile.mkdtemp(dir=self.home)
+        num_files = 5
+        for i in range(num_files):
+            f = tempfile.NamedTemporaryFile('w+b', dir=path)
+            f.file.write(os.urandom(1024 * 1024 * 4))
+        ftp = self.ftp
+        ftp.run("set net:limit-rate 10000")
+        ftp.mirror(os.path.basename(path), self.storage, background=True)
+        time.sleep(0.5)
+        self.assertEqual(len(os.listdir(self.storage)), 1)
+        self.assertEqual(len(ftp.jobs), 1)
+
+    def test_get(self):
+        f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+        f.file.write(os.urandom(1024 * 1024 * 5))
+        ftp = self.ftp
+        ftp.run("set net:limit-rate 10000")
+        fname = os.path.basename(f.name)
+        target_path = os.path.join(self.storage, fname)
+        ftp.get(fname, target_path, delete_src=False, background=True)
+        time.sleep(0.5)
+        self.assertEqual(len(ftp.jobs), 1)
+
+    def test_get_delete_src(self):
+        f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+        f.file.write(os.urandom(1024 * 1024 * 5))
+        ftp = self.ftp
+        fname = os.path.basename(f.name)
+        target_path = os.path.join(self.storage, fname)
+        f.close()
+        ftp.get(fname, target_path, delete_src=True, background=True)
+        time.sleep(0.5)
+        home_ls = os.listdir(self.home)
+        self.assertEqual(len(home_ls), 0)
+
+
 class JobParserTest(unittest.TestCase):
     def test_empty(self):
         results = lftp.LFTP.parse_jobs("")
