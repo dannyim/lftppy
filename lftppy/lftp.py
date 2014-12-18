@@ -186,7 +186,7 @@ class LFTP(object):
         :return: The latest output of the job with id job_id,
                 or the current foreground process if no job_id is given
         """
-        if not job_id:
+        if job_id is None:
             self.process.expect([self.prompt, EOF, TIMEOUT], timeout=timeout)
             result = self.process.before
             # todo handle EOF and TIMEOUT cases
