@@ -103,7 +103,7 @@ class LFTP(object):
         :param background: run the command in the background
         :return:
         """
-        if not self.process:
+        if not self.is_running():
             raise exc.ConnectionError()
         if background:
             cmd += " &"
@@ -186,12 +186,12 @@ class LFTP(object):
         :return: The latest output of the job with id job_id,
                 or the current foreground process if no job_id is given
         """
-        if not job_id:
+        if job_id is None:
             self.process.expect([self.prompt, EOF, TIMEOUT], timeout=timeout)
             result = self.process.before
             # todo handle EOF and TIMEOUT cases
         else:
-            result = self.jobs[job_id]
+            result = self.jobs[job_id].text
         result = self._process_cmd_output(result)
         return result
 
