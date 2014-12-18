@@ -191,7 +191,7 @@ class LFTP(object):
             result = self.process.before
             # todo handle EOF and TIMEOUT cases
         else:
-            result = self.jobs[job_id]
+            result = self.jobs[job_id].text
         result = self._process_cmd_output(result)
         return result
 
