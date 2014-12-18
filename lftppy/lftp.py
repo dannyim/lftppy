@@ -103,7 +103,7 @@ class LFTP(object):
         :param background: run the command in the background
         :return:
         """
-        if not self.process:
+        if not self.is_running():
             raise exc.ConnectionError()
         if background:
             cmd += " &"
