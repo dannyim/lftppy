@@ -141,8 +141,9 @@ class LFTPTest(FTPServerBase):
             commands.append(cmd)
             ftp.run(cmd, True)
             time.sleep(0.5)
-        self.assertEqual(len(ftp.jobs), len(files))
-        j0 = ftp.jobs[0]
+        jobs = ftp.jobs
+        self.assertEqual(len(jobs), len(files))
+        j0 = jobs[0]
         j0_txt = j0.text
         self.assertTrue(commands[0] in j0_txt)
         j0_out = ftp.get_output(0)
