@@ -179,7 +179,7 @@ class LFTP(object):
         self._check_for_errors(result)
         match = re.match(regex, result, re.DOTALL)
         if not match:
-            # todo raise an error if the command wasn't in the output?
+            # TODO(minadyn@gmail.com) raise an error if the command wasn't in the output?
             return result
         else:
             return match.group(2)
@@ -200,7 +200,7 @@ class LFTP(object):
             # there are some cases where the prompt appears multiple
             # times, so we keep trying to match the prompt until it times out,
             # using a small timeout value
-            # todo handle the case of a legitimate timeout
+            # TODO(minadyn@gmail.com) handle the case of a legitimate timeout
             waiting = True
             max_tries = 5
             tries = 0
@@ -211,7 +211,7 @@ class LFTP(object):
                     waiting = False
                 tries += 1
                 result += self.process.before
-            # todo handle EOF and TIMEOUT cases
+            # TODO(minadyn@gmail.com) handle EOF and TIMEOUT cases
         else:
             result = self.jobs[job_id].text
         result = self._process_cmd_output(result)
