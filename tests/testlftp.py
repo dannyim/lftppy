@@ -216,6 +216,14 @@ class LFTPTest(FTPServerBase):
         self.assertEqual(len(os.listdir(self.storage)), 1)
         self.assertEqual(len(ftp.jobs), 1)
 
+    def test_mirror_file(self):
+        f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+        f.file.write(os.urandom(1024 * 1024 * 5))
+        ftp = self.ftp
+        fname = os.path.basename(f.name)
+        self.assertRaises(exc.DownloadError,
+                          lambda: ftp.mirror(fname, self.storage, background=True))
+
     def test_get(self):
         f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
         f.file.write(os.urandom(1024 * 1024 * 5))
