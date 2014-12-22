@@ -256,7 +256,7 @@ class LFTP(object):
             cmd += [str(parallel)]
         if background:
             cmd += ['&']
-        self.process.sendline(" ".join(cmd))
+        return self.process.sendline(" ".join(cmd))
 
 
 class Job(object):
