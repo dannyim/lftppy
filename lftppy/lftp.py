@@ -239,10 +239,7 @@ class LFTP(object):
             cmd_parts.append('-a')
         cmd_parts.append(rfile)
         cmd_parts += ['-o', lfile]
-        if background:
-            cmd_parts += ['&']
         cmd = " ".join(cmd_parts)
-        self.run(cmd, background=background)
 
     def mirror(self, source, target, parallel=None, background=False):
         """
