@@ -193,8 +193,24 @@ class LFTP(object):
                 or the current foreground process if no job_id is given
         """
         if job_id is None:
-            self.process.expect([self.prompt, EOF, TIMEOUT], timeout=timeout)
-            result = self.process.before
+            matches = [
+                self.prompt,
+                EOF,
+                TIMEOUT
+            ]
+            # there are some cases where the prompt appears multiple
+            # times, so we keep trying to match the prompt until it times out,
+            # using a small timeout value
+            waiting = True
+            max_tries = 5
+            tries = 0
+            result = ""
+            while waiting:
+                i = self.process.expect(matches, timeout=0.3)
+                if i == matches.index(TIMEOUT) or tries > max_tries:
+                    waiting = False
+                tries += 1
+                result += self.process.before
             # todo handle EOF and TIMEOUT cases
         else:
             result = self.jobs[job_id].text
