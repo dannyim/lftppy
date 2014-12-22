@@ -8,7 +8,7 @@ Install
 Example Usage
 ===
 <pre><code>
-import lftp
+import lftppy
 # create process
 process = lftp.LFTP(hostname, port, username, password)
 # mirror directory, put process in the background
