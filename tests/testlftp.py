@@ -269,6 +269,15 @@ class LFTPTest(FTPServerBase):
         ftp = self.ftp
         ftp.rm(fname)
         self.assertEqual(len(os.listdir(self.home)), 0)
+        # delete using recurse
+        _, fpath = tempfile.mkstemp(dir=self.home)
+        f = open(fpath, mode='w+b')
+        f.write(os.urandom(1024 * 1024 * 2))
+        fname = os.path.basename(fpath)
+        f.close()
+        ftp = self.ftp
+        ftp.rm(fname, recurse=True)
+        self.assertEqual(len(os.listdir(self.home)), 0)
 
     def test_delete_file_not_exist(self):
         fname = "does_not_exist"
