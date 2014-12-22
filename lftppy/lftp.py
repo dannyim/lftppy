@@ -201,6 +201,7 @@ class LFTP(object):
             # there are some cases where the prompt appears multiple
             # times, so we keep trying to match the prompt until it times out,
             # using a small timeout value
+            # todo handle the case of a legitimate timeout
             waiting = True
             max_tries = 5
             tries = 0
@@ -256,7 +257,7 @@ class LFTP(object):
             cmd += [str(parallel)]
         if background:
             cmd += ['&']
-        return self.process.sendline(" ".join(cmd))
+        return self.run(" ".join(cmd))
 
 
 class Job(object):
