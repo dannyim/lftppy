@@ -32,7 +32,7 @@ class FTPServerBase(unittest.TestCase):
         self.port = 9001
         self._setup_home()
         authorizer = DummyAuthorizer()
-        authorizer.add_user('vagrant', 'vagrant', self.home)
+        authorizer.add_user('vagrant', 'vagrant', self.home, perm='elrdfmw')
         authorizer.add_anonymous(self.home)
         handler = FTPHandler
         handler.authorizer = authorizer
