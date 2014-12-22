@@ -258,6 +258,18 @@ class LFTP(object):
             cmd += ['&']
         return self.run(" ".join(cmd))
 
+    def rm(self, filename, recurse=False):
+        """ Remove a single file
+        :param filename: The file to delete, relative to the users home directory
+        :return:
+        :raises: lftppy.exc.DownloadError if the command fails
+        """
+
+        cmd = ['rm']
+        if recurse:
+            cmd.append('-r')
+        cmd.append(filename)
+        return self.run(" ".join(cmd))
 
 class Job(object):
     def __init__(self, job_no, text):
