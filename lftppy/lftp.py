@@ -240,6 +240,7 @@ class LFTP(object):
         cmd_parts.append(rfile)
         cmd_parts += ['-o', lfile]
         cmd = " ".join(cmd_parts)
+        return self.run(cmd, background=background)
 
     def mirror(self, source, target, parallel=None, background=False):
         """
