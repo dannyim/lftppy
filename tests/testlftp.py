@@ -226,6 +226,14 @@ class LFTPTest(FTPServerBase):
         time.sleep(0.5)
         self.assertEqual(len(ftp.jobs), 1)
 
+    def test_get_dir_failure(self):
+        d = tempfile.mkdtemp(dir=self.home)
+        f = tempfile.NamedTemporaryFile(mode='w+b', dir=d)
+        ftp = self.ftp
+        dname = os.path.basename(d)
+        self.assertRaises(exc.DownloadError,
+                          lambda: ftp.get(dname, self.storage, background=True))
+
     def test_get_delete_src(self):
         f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
         f.file.write(os.urandom(1024 * 1024 * 5))
