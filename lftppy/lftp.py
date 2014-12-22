@@ -70,7 +70,6 @@ class LFTP(object):
         for line in text.splitlines():
             matches = LFTP.job_id_matcher.match(line)
             if matches:
-                # start with n, decrease to 0
                 # start of next item, create the job with the text that we've aggregated
                 prev = n
                 n = int(matches.group(1))
