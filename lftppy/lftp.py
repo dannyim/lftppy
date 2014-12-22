@@ -70,7 +70,6 @@ class LFTP(object):
         for line in text.splitlines():
             matches = LFTP.job_id_matcher.match(line)
             if matches:
-                # start with n, decrease to 0
                 # start of next item, create the job with the text that we've aggregated
                 prev = n
                 n = int(matches.group(1))
@@ -180,7 +179,7 @@ class LFTP(object):
         self._check_for_errors(result)
         match = re.match(regex, result, re.DOTALL)
         if not match:
-            # todo raise an error if the command wasn't in the output?
+            # TODO(minadyn@gmail.com) raise an error if the command wasn't in the output?
             return result
         else:
             return match.group(2)
@@ -201,6 +200,7 @@ class LFTP(object):
             # there are some cases where the prompt appears multiple
             # times, so we keep trying to match the prompt until it times out,
             # using a small timeout value
+            # TODO(minadyn@gmail.com) handle the case of a legitimate timeout
             waiting = True
             max_tries = 5
             tries = 0
@@ -211,7 +211,7 @@ class LFTP(object):
                     waiting = False
                 tries += 1
                 result += self.process.before
-            # todo handle EOF and TIMEOUT cases
+            # TODO(minadyn@gmail.com) handle EOF and TIMEOUT cases
         else:
             result = self.jobs[job_id].text
         result = self._process_cmd_output(result)
@@ -256,8 +256,20 @@ class LFTP(object):
             cmd += [str(parallel)]
         if background:
             cmd += ['&']
-        return self.process.sendline(" ".join(cmd))
+        return self.run(" ".join(cmd))
 
+    def rm(self, filename, recurse=False):
+        """ Remove a single file
+        :param filename: The file to delete, relative to the users home directory
+        :return:
+        :raises: lftppy.exc.DownloadError if the command fails
+        """
+
+        cmd = ['rm']
+        if recurse:
+            cmd.append('-r')
+        cmd.append(filename)
+        return self.run(" ".join(cmd))
 
 class Job(object):
     def __init__(self, job_no, text):

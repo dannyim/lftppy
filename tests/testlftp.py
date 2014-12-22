@@ -141,8 +141,9 @@ class LFTPTest(FTPServerBase):
             commands.append(cmd)
             ftp.run(cmd, True)
             time.sleep(0.5)
-        self.assertEqual(len(ftp.jobs), len(files))
-        j0 = ftp.jobs[0]
+        jobs = ftp.jobs
+        self.assertEqual(len(jobs), len(files))
+        j0 = jobs[0]
         j0_txt = j0.text
         self.assertTrue(commands[0] in j0_txt)
         j0_out = ftp.get_output(0)
@@ -250,6 +251,38 @@ class LFTPTest(FTPServerBase):
         time.sleep(0.5)
         home_ls = os.listdir(self.home)
         self.assertEqual(len(home_ls), 0)
+
+    def test_delete_file(self):
+        _, fpath = tempfile.mkstemp(dir=self.home)
+        f = open(fpath, mode='w+b')
+        f.write(os.urandom(1024 * 1024 * 2))
+        fname = os.path.basename(fpath)
+        f.close()
+        ftp = self.ftp
+        ftp.rm(fname)
+        self.assertEqual(len(os.listdir(self.home)), 0)
+
+    def test_delete_file_not_exist(self):
+        fname = "does_not_exist"
+        ftp = self.ftp
+        self.assertRaises(exc.DownloadError, lambda: ftp.rm(fname))
+
+    def test_delete_dir(self):
+        fpath = tempfile.mkdtemp(dir=self.home)
+        fname = os.path.basename(fpath)
+        _, fpath = tempfile.mkstemp(dir=fpath)
+        f = open(fpath, 'w+b')
+        f.write(os.urandom(1024 * 1024 * 5))
+        f.close()
+        ftp = self.ftp
+        ftp.rm(fname, recurse=True)
+        self.assertEqual(len(os.listdir(self.home)), 0)
+
+    def test_bad_delete_dir(self):
+        # rm shouldn't remove directories without the recurse flag set to True
+        fpath = tempfile.mkdtemp(dir=self.home)
+        fname = os.path.basename(fpath)
+        self.assertRaises(exc.DownloadError, lambda: self.ftp.rm(fname, recurse=False))
 
 
 class JobParserTest(unittest.TestCase):
