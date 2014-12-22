@@ -235,12 +235,17 @@ class LFTPTest(FTPServerBase):
                           lambda: ftp.get(dname, self.storage, background=True))
 
     def test_get_delete_src(self):
-        f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
-        f.file.write(os.urandom(1024 * 1024 * 5))
+        fname = 'text.txt'
+        fpath = os.path.join(self.home, fname)
+        f = open(fpath, 'w+b')
+        os.chmod(fpath, 0777)
+        f.write(os.urandom(1024 * 1024 * 5))
         ftp = self.ftp
-        fname = os.path.basename(f.name)
+        self.assertTrue(os.path.exists(fpath))
+        fname = os.path.basename(fpath)
         target_path = os.path.join(self.storage, fname)
         f.close()
+        self.assertTrue(os.path.exists(fpath))
         ftp.get(fname, target_path, delete_src=True, background=True)
         time.sleep(0.5)
         home_ls = os.listdir(self.home)
