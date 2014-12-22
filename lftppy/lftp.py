@@ -162,8 +162,13 @@ class LFTP(object):
         self.last_cmd = line
         self.process.sendline(line)
 
+    @staticmethod
+    def _check_for_errors(output):
+        if "Access failed: 550" in output:
+            raise exc.DownloadError(output)
+
     def _process_cmd_output(self, result):
-        """ Strip out the command from the output
+        """ Strip out the command from the output.  Detect any errors.
         :param result:
         :return:
         """
@@ -172,6 +177,7 @@ class LFTP(object):
         if bg_char_idx > 0:
             last_cmd = last_cmd[:bg_char_idx]
         regex = "\s*(%s)\s*(.*)" % re.escape(last_cmd)
+        self._check_for_errors(result)
         match = re.match(regex, result, re.DOTALL)
         if not match:
             # todo raise an error if the command wasn't in the output?
