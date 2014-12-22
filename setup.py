@@ -9,6 +9,7 @@ setup(
     url = 'https://github.com/minadyn/lftppy',
     download_url = 'https://github.com/minadyn/lftppy/tarball/0.1',
     keywords = ['lftp', 'ftp'],
+    zip_safe = True,
     install_requires = [
         'pexpect >=3.3, < 4.0',
         'sure',
