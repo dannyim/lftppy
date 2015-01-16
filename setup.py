@@ -9,11 +9,15 @@ setup(
     url = 'https://github.com/minadyn/lftppy',
     download_url = 'https://github.com/minadyn/lftppy/tarball/0.1',
     keywords = ['lftp', 'ftp'],
+    zip_safe = True,
     install_requires = [
-        'pexpect >=3.3, < 4.0',
+        'pexpect==3.3',
         'sure',
         'mock',
         'six',
         'pyftpdlib',
+    ],
+    dependency_links = [
+        'git+ssh://git@github.com/pexpect/pexpect.git@e2ff2f47fc7719ebf4375eec81f996362816bb10#egg=pexpect-3.3'
     ]
 )
