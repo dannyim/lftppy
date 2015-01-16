@@ -149,6 +149,25 @@ class LFTPTest(FTPServerBase):
         j0_out = ftp.get_output(0)
         self.assertTrue(commands[0] in j0_out)
 
+    def test_job_in_progress(self):
+        files = []
+        for i in range(2):
+            f = tempfile.NamedTemporaryFile('w+b', dir=self.home)
+            f.file.write(os.urandom(1024*1024*1))
+            files.append(f)
+        ftp = self.ftp
+        ftp.run("set net:limit-rate 100000")
+        commands = []
+        for f in files:
+            fname = f.name
+            self.assertTrue(os.path.exists(fname))
+            cmd = "get -O %s %s" % (self.storage, os.path.basename(fname))
+            commands.append(cmd)
+            ftp.run(cmd, True)
+            time.sleep(0.5)
+        for k, j in ftp.jobs.iteritems():
+            self.assertTrue("[Receiving data]" in j.text)
+            time.sleep(0.5)
 
     def test_kill_single_job(self):
         # add a few big files to download
