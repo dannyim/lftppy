@@ -194,6 +194,7 @@ class LFTP(object):
         if job_id is None:
             matches = [
                 self.prompt,
+                "\[Waiting for response...\]",
                 EOF,
                 TIMEOUT
             ]
@@ -206,7 +207,7 @@ class LFTP(object):
             tries = 0
             result = ""
             while waiting:
-                i = self.process.expect(matches, timeout=0.3)
+                i = self.process.expect(matches, timeout=1)
                 if i == matches.index(TIMEOUT) or tries > max_tries:
                     waiting = False
                 tries += 1
