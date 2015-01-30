@@ -254,7 +254,7 @@ class LFTP(object):
         """
         cmd = ['mirror', source, target]
         if parallel:
-            cmd += [str(parallel)]
+            cmd += ["--parallel=%s" % str(parallel)]
         if background:
             cmd += ['&']
         return self.run(" ".join(cmd))
